@@ -1063,7 +1063,7 @@ pyopt = get_option('plpython')
 python3_dep = not_found_dep
 if not pyopt.disabled()
   pm = import('python')
-  python3_inst = pm.find_installation(required: pyopt)
+  python3_inst = pm.find_installation(python.path(), required: pyopt)
   if python3_inst.found()
     python3_dep = python3_inst.dependency(embed: true, required: pyopt)
     # Remove this check after we depend on Meson >= 1.1.0
@@ -2924,8 +2924,12 @@ potentially_conflicting_files = []
 foreach t : potentially_conflicting_files_t
   potentially_conflicting_files += t.full_path()
 endforeach
-foreach t : configure_files
-  t = '@0@'.format(t)
+foreach t1 : configure_files
+  if meson.version().version_compare('>=0.59')
+    t = fs.parent(t1) / fs.name(t1)
+  else
+    t = '@0@'.format(t1)
+  endif
   potentially_conflicting_files += meson.current_build_dir() / t
 endforeach
 foreach sub, fnames : generated_sources_ac
